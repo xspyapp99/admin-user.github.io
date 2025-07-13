@@ -99,9 +99,10 @@
         }
         .user-list-item .user-name { font-weight: 600; }
         .user-list-item .device-name { font-size: 0.8rem; opacity: 0.8; }
+        /* Updated User ID Style */
         .user-list-item .user-id { 
-            font-size: 0.85rem; 
-            font-weight: 700;
+            font-size: 0.85rem; /* Bada font size */
+            font-weight: 700;  /* Bold font */
             color: var(--text-primary);
             opacity: 0.9;
             word-break: break-all; 
@@ -800,9 +801,29 @@
             }
             if (button.classList.contains('capture-photo-btn')) {
                 const facing = button.dataset.facing;
-                if(facing !== undefined) {
-                    update(ref(db, `user/${userId}/${childKey}/photo/params`), { capturePhoto: true, facingPhoto: parseInt(facing) });
-                }
+                if (facing === undefined) return;
+
+                const paramsRef = ref(db, `user/${userId}/${childKey}/photo/params`);
+                
+                const span = button.querySelector('span');
+                const originalText = span.textContent;
+                button.disabled = true;
+                span.textContent = 'Sending...';
+
+                update(paramsRef, { capturePhoto: true, facingPhoto: parseInt(facing) })
+                    .then(() => {
+                        span.textContent = 'Command Sent!';
+                        setTimeout(() => {
+                            span.textContent = originalText;
+                            button.disabled = false;
+                        }, 3000);
+                    })
+                    .catch((error) => {
+                        console.error("Error sending command: ", error);
+                        alert("Failed to send command. Please try again.");
+                        span.textContent = originalText;
+                        button.disabled = false;
+                    });
             }
             if (button.id === 'refresh-photos-btn') { 
                 displayCategoryData('photo'); 
